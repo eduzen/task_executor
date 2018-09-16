@@ -8,18 +8,25 @@ services:
             - RABBITMQ_DEFAULT_PASS=mypass
         ports:
             - "5673:5672"
+    redis:
+        hostname: redis
+        image: redis
 
     worker:
-        command: celery worker --app=task_manager.celeryapp:app --concurrency=1 --loglevel=info
+        command: celery worker --app=task_manager.celeryapp:app --concurrency=3 --loglevel=info
         build:
             context: .
             dockerfile: Dockerfile
+        ports:
+            - "4444:4444"
         volumes:
             - .:/app
         links:
             - rabbit
         depends_on:
             - rabbit
+        environment:
+            - REDIS_URL=redis://cache
 
     launch-task:
         build:
@@ -34,3 +41,7 @@ services:
         depends_on:
             - rabbit
             - worker
+        environment:
+            - REDIS_URL=redis://cache
+        ports:
+            - "4444:4444"
