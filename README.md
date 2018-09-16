@@ -1,8 +1,21 @@
-# task_executor [![Build Status](https://travis-ci.org/eduzen/task_executor.svg?branch=master)](https://travis-ci.org/eduzen/task_executor)
+# task_executor [![Build Status](https://travis-ci.org/eduzen/task_executor.svg?branch=master)](https://travis-ci.org/eduzen/task_executor) [![codecov](https://codecov.io/gh/eduzen/task_executor/branch/master/graph/badge.svg)](https://codecov.io/gh/eduzen/task_executor)
 
-# Usage
+For this exercise, we choose [Celery](http://www.celeryproject.org/) that is an asynchronous
+task queue/job queue based on distributed message passing. Tasks can execute asynchronously
+(in the background) or synchronously (wait until ready). Celery requires a message transport
+to send and receive message. We choose [Rabbitmq](https://www.rabbitmq.com/) because sworks well celery.
+Other broker could be [Redis](https://redis.io/), but for this exercise we use it as a memcachedb a
+kind of persistent key-value store, for managing locks through all the tasks. We can use this
+distributed lock to have our tasks try to acquire a non-blocking lock, and exit if the lock isn’t acquired.
 
-We are using docker and docker-compose. If you already have this two requirements, just run:
+## Installation
+This project runs with `docker` (you can use traditional `virtualenv` but it's prepared out of the box for `docker`).
+We choose `python 3.6.4` and not `python 3.7` because `Celery` doesn't support it yet.
+Also to manage docker, we are using [docker-compose](https://docs.docker.com/compose/).
+
+## Usage
+
+If you already have `docker` and `docker-compose`, just run:
 
 ```bash
 make start
@@ -10,6 +23,8 @@ make start
 # only test and flake8
 make test
 ```
+This command will download the images and build them in a container.
+
 
 ## Workers
 
@@ -28,20 +43,13 @@ docker-compose scale worker=5
 
 ## Tasks
 
-Celery tasks have a custom decorator in order to achieve: 2)__each target (dave for example)
-can only execute one task at once__. To do this, we choose Redis instead of django cache though
-this last option is recommended by them, (here)[http://docs.celeryproject.org/en/latest/tutorials/task-cookbook.html#ensuring-a-task-is-only-executed-one-at-a-time]
+Celery tasks have a custom decorator in order to achieve: __2) each target (dave for example) can only execute one task at once__.
+To do this, we choose Redis instead of django cache though this last option is recommended [here][http://docs.celeryproject.org/en/latest/tutorials/task-cookbook.html#ensuring-a-task-is-only-executed-one-at-a-time]
+because if memcached (or some other non- persistent cache) is used and (1) the cache daemon crashes or
+(2) the cache key is culled before the appropriate expiration time / lock release,
+then you have a race condition where two or more tasks could simultaneously acquire the task lock (see
+[this](http://loose-bits.com/2010/10/distributed-task-locking-in-celery.html))
 
-Exercise:
-Given in the code is a queue filled with a number of tasks that need to be executed.
-Your job is to write a task executor that goes through each task and executes it.
-Each task specifies a target. Think of the target as the entity that is effected by the task.
-It should execute all tasks in the fastest time possible, but there are constraints.
-
-1) no more than 3 tasks may be executed in parallel
-2) each target (dave for example) can only execute one task at once
-3) each type of task has a rate limit specific to it. This number tells you how often this specific task may be executed per second.
-4) the tasks for each target must stay in the same order
-
-Use of libraries of all kinds is encouraged! Please use Python 3+
+So, in case that the target is busy (locked), we will retry the task with a custom delay.
+Also the task has a rate limit configured.
 
