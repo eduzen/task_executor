@@ -1,9 +1,12 @@
 import redis
+import logging
+
+logger = logging.getLogger(__name__)
 
 REDIS_CLIENT = redis.Redis(host="redis")
 
 
-def only_one(function=None, timeout=60 * 1):
+def only_one_task_per_user(function=None, timeout=60 * 1):
     """Enforce only one celery task at a time."""
 
     def _dec(run_func):
@@ -11,7 +14,7 @@ def only_one(function=None, timeout=60 * 1):
 
         def _caller(*args, **kwargs):
             """Caller."""
-            task, pk, target, time = args
+            task, pk, target, _ = args
             have_lock = False
             lock = REDIS_CLIENT.lock(target, timeout=timeout)
             try:
@@ -19,6 +22,7 @@ def only_one(function=None, timeout=60 * 1):
                 if have_lock:
                     run_func(*args, **kwargs)
                 else:
+                    logger.info(f'User {target} is busy. We will retry the task.')
                     task.retry()
             finally:
                 if have_lock:

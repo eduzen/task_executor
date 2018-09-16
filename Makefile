@@ -22,7 +22,7 @@ ps:
 clean: stop
 	docker-compose rm --force -v
 
-only_test:
+only_test: build
 	docker-compose run --rm launch-task pytest
 
 pep8:
