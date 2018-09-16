@@ -3,7 +3,7 @@
 For this exercise, we choose [Celery](http://www.celeryproject.org/) that is an asynchronous
 task queue/job queue based on distributed message passing. Tasks can execute asynchronously
 (in the background) or synchronously (wait until ready). Celery requires a message transport
-to send and receive message. We choose [Rabbitmq](https://www.rabbitmq.com/) because sworks well celery.
+to send and receive message. We choose [Rabbitmq](https://www.rabbitmq.com/) because it works well with celery.
 Other broker could be [Redis](https://redis.io/), but for this exercise we use it as a memcachedb a
 kind of persistent key-value store, for managing locks through all the tasks. We can use this
 distributed lock to have our tasks try to acquire a non-blocking lock, and exit if the lock isn’t acquired.
