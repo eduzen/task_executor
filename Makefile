@@ -10,8 +10,11 @@ help:
 build:
 	docker-compose build
 
-start: build
-	docker-compose up
+start: clean
+	docker-compose up --build
+
+run-tasks:
+	docker-compose up --build launch-task
 
 stop:
 	docker-compose stop

@@ -7,13 +7,16 @@ REDIS_CLIENT = redis.Redis(host="redis")
 
 
 def only_one_task_per_user(function=None, timeout=60 * 1):
-    """Enforce only one celery task at a time."""
+    """
+        We use redis as cache to enforce only one celery
+        task per user at a time.
+    """
 
     def _dec(run_func):
-        """Decorator."""
+        """Decorator"""
 
         def _caller(*args, **kwargs):
-            """Caller."""
+            """Caller"""
             task, pk, target, _ = args
             have_lock = False
             lock = REDIS_CLIENT.lock(target, timeout=timeout)
@@ -22,7 +25,7 @@ def only_one_task_per_user(function=None, timeout=60 * 1):
                 if have_lock:
                     run_func(*args, **kwargs)
                 else:
-                    logger.info(f'User {target} is busy. We will retry the task.')
+                    logger.info(f"User {target} is busy. We will retry the task with id {pk}.")
                     task.retry()
             finally:
                 if have_lock:

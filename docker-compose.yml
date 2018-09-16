@@ -17,8 +17,6 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        ports:
-            - "4444:4444"
         volumes:
             - .:/app
         links:
@@ -43,5 +41,3 @@ services:
             - worker
         environment:
             - REDIS_URL=redis://cache
-        ports:
-            - "4444:4444"
