@@ -1,6 +1,16 @@
-# task_executor
+# task_executor [![Build Status](https://travis-ci.org/eduzen/task_executor.svg?branch=master)](https://travis-ci.org/eduzen/task_executor)
 
-'''
+# Usage
+
+We are using docker and docker-compose. If you already have this two requirements, just run:
+```bash
+make start
+
+# only test and flake8
+make test
+````
+
+Exercise:
 Given in the code is a queue filled with a number of tasks that need to be executed.
 Your job is to write a task executor that goes through each task and executes it.
 Each task specifies a target. Think of the target as the entity that is effected by the task.
@@ -13,5 +23,3 @@ It should execute all tasks in the fastest time possible, but there are constrai
 
 Use of libraries of all kinds is encouraged! Please use Python 3+
 
-v1.0
-'''
